@@ -1,0 +1,202 @@
+<div class="dashboard-wrapper">
+
+    <div class="banner-container">
+        <div class="banner-text">
+            <h1 class="banner-title">Babatngon Barangay Statistics Report</h1>
+            <p class="banner-subtitle">Dynamic filter engine, matrix aggregations, and data export</p>
+        </div>
+    </div>
+
+    <!-- Filtering Engine Configurations -->
+    <div class="filter-panel">
+        <h3 class="panel-section-title">🔍 Filtering Engine Configurations</h3>
+
+        <div class="filter-controls-grid">
+            <!-- Barangay Filter -->
+            <div class="filter-group">
+                <label class="control-label">Filter By Barangay</label>
+                <div class="excel-dropdown-container">
+                    <div class="dropdown-trigger-header" (click)="toggleDropdown('barangay')">
+                        <span class="trigger-selected-text">{{ getSelectedText('barangay') }}</span>
+                        <span class="trigger-arrow-icon" [class.open]="dropdownStates['barangay']">▼</span>
+                    </div>
+
+                    <div class="excel-filter-dropdown-menu" *ngIf="dropdownStates['barangay']">
+                        <div class="search-box-container">
+                            <input type="text" placeholder="Search" class="filter-search-input" [(ngModel)]="barangaySearchTerm" />
+                        </div>
+                        <div class="checklist-container tree-view">
+                            <label class="checklist-item root-item">
+                                <input type="checkbox"
+                                       [checked]="selectedBarangays.length === barangayOptions.length"
+                                       (change)="toggleAllBarangays($any($event.target).checked)" />
+                                <span class="checklist-text font-bold">(Select All)</span>
+                            </label>
+                            <div class="tree-branches">
+                                <label *ngFor="let b of barangayOptions" class="checklist-item branch-item">
+                                    <input type="checkbox" [checked]="selectedBarangays.includes(b)" (change)="onBarangayToggle(b)" />
+                                    <span class="checklist-text">{{ b }}</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="filter-group">
+                <label class="control-label">Filter By Status</label>
+                <div class="excel-dropdown-container">
+                    <div class="dropdown-trigger-header" (click)="toggleDropdown('status')">
+                        <span class="trigger-selected-text">{{ getSelectedText('status') }}</span>
+                        <span class="trigger-arrow-icon" [class.open]="dropdownStates['status']">▼</span>
+                    </div>
+
+                    <div class="excel-filter-dropdown-menu" *ngIf="dropdownStates['status']">
+                        <div class="checklist-container tree-view">
+                            <label class="checklist-item root-item">
+                                <input type="checkbox"
+                                       [checked]="selectedStatuses.length === statusOptions.length"
+                                       (change)="toggleAllStatuses($any($event.target).checked)" />
+                                <span class="checklist-text font-bold">(Select All)</span>
+                            </label>
+                            <div class="tree-branches">
+                                <label *ngFor="let status of statusOptions" class="checklist-item branch-item">
+                                    <input type="checkbox" [checked]="selectedStatuses.includes(status)" (change)="onStatusToggle(status)" />
+                                    <span class="checklist-text">{{ status }}</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gender Filter -->
+            <div class="filter-group">
+                <label class="control-label">Filter By Gender Profile</label>
+                <div class="excel-dropdown-container">
+                    <div class="dropdown-trigger-header" (click)="toggleDropdown('gender')">
+                        <span class="trigger-selected-text">{{ getSelectedText('gender') }}</span>
+                        <span class="trigger-arrow-icon" [class.open]="dropdownStates['gender']">▼</span>
+                    </div>
+
+                    <div class="excel-filter-dropdown-menu" *ngIf="dropdownStates['gender']">
+                        <div class="checklist-container tree-view">
+                            <label class="checklist-item root-item">
+                                <input type="checkbox"
+                                       [checked]="selectedGenders.length === genderOptions.length"
+                                       (change)="toggleAllGenders($any($event.target).checked)" />
+                                <span class="checklist-text font-bold">(Select All)</span>
+                            </label>
+                            <div class="tree-branches">
+                                <label *ngFor="let gender of genderOptions" class="checklist-item branch-item">
+                                    <input type="checkbox" [checked]="selectedGenders.includes(gender)" (change)="onGenderToggle(gender)" />
+                                    <span class="checklist-text">{{ gender }}</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Age Bracket Filter -->
+            <div class="filter-group">
+                <label class="control-label">Filter By Age Bracket</label>
+                <div class="excel-dropdown-container">
+                    <div class="dropdown-trigger-header" (click)="toggleDropdown('age')">
+                        <span class="trigger-selected-text">{{ getSelectedText('age') }}</span>
+                        <span class="trigger-arrow-icon" [class.open]="dropdownStates['age']">▼</span>
+                    </div>
+
+                    <div class="excel-filter-dropdown-menu" *ngIf="dropdownStates['age']">
+                        <div class="checklist-container tree-view">
+                            <label class="checklist-item root-item">
+                                <input type="checkbox"
+                                       [checked]="selectedAgeBrackets.length === ageBracketOptions.length"
+                                       (change)="toggleAllAgeBrackets($any($event.target).checked)" />
+                                <span class="checklist-text font-bold">(Select All)</span>
+                            </label>
+                            <div class="tree-branches">
+                                <label *ngFor="let ageOpt of ageBracketOptions" class="checklist-item branch-item">
+                                    <input type="checkbox" [checked]="selectedAgeBrackets.includes(ageOpt)" (change)="onAgeBracketToggle(ageOpt)" />
+                                    <span class="checklist-text">{{ ageOpt }}</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Statistics Matrix Overview -->
+    <div class="matrix-panel">
+        <h3 class="panel-title-header">
+            <span>Total Statistics Matrix Overview</span>
+            <button (click)="exportToExcel()" class="btn-export">📥 Export Data to Excel (.xlsx)</button>
+        </h3>
+
+        <div *ngIf="isLoadingMatrix" class="loading-state">Loading consolidated matrix layers...</div>
+
+        <div *ngIf="!isLoadingMatrix" class="table-responsive-wrapper">
+            <table class="matrix-table">
+                <thead>
+                <tr class="thead-row-double">
+                    <th rowspan="2" class="th-barangay">BARANGAY</th>
+                    <th [attr.colspan]="statusColspan" class="th-group-header">STATUS</th>
+                    <th [attr.colspan]="biometricColspan" class="th-group-header">BIOMETRIC PROFILE</th>
+                    <th [attr.colspan]="ageColspan" class="th-group-header-last">AGE BRACKET</th>
+                </tr>
+                <tr class="thead-sub-row">
+                    <!-- Status Sub-headers -->
+                    <th *ngIf="selectedStatuses.includes('Active')" class="th-sub text-active">ACTIVE</th>
+                    <th *ngIf="selectedStatuses.includes('Transferred')" class="th-sub text-transferred">TRANSFERRED</th>
+                    <th *ngIf="selectedStatuses.includes('Deceased')" class="th-sub text-deceased">DECEASED</th>
+
+                    <!-- Biometric Sub-headers -->
+                    <th *ngIf="selectedGenders.includes('Male')" class="th-sub text-male">MALE</th>
+                    <th *ngIf="selectedGenders.includes('Female')" class="th-sub text-female">FEMALE</th>
+
+                    <!-- Age Bracket Sub-headers -->
+                    <th *ngIf="selectedAgeBrackets.includes('Below 18 yrs.old')" class="th-sub text-below18">BELOW 18YRS.OLD</th>
+                    <th *ngIf="selectedAgeBrackets.includes('18 yrs.old and Above')" class="th-sub text-above18 border-right-split">18YRS.OLD AND ABOVE</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let row of filteredMatrixReport" class="table-body-row">
+                    <td class="td-barangay">{{ row.barangay }}</td>
+
+                    <!-- Status Data Cells -->
+                    <td *ngIf="selectedStatuses.includes('Active')" class="td-center">{{ row.active_count | number }}</td>
+                    <td *ngIf="selectedStatuses.includes('Transferred')" class="td-center">{{ row.transferred_count | number }}</td>
+                    <td *ngIf="selectedStatuses.includes('Deceased')" class="td-center">{{ row.deceased_count | number }}</td>
+
+                    <!-- Biometric Data Cells -->
+                    <td *ngIf="selectedGenders.includes('Male')" class="td-center">{{ row.male_count | number }}</td>
+                    <td *ngIf="selectedGenders.includes('Female')" class="td-center">{{ row.female_count | number }}</td>
+
+                    <!-- Age Bracket Data Cells -->
+                    <td *ngIf="selectedAgeBrackets.includes('Below 18 yrs.old')" class="td-center">{{ row.below_18_count | number }}</td>
+                    <td *ngIf="selectedAgeBrackets.includes('18 yrs.old and Above')" class="td-center border-right-split">{{ row.above_18_count | number }}</td>
+                </tr>
+                <tr class="table-summary-row">
+                    <td class="td-summary-title">TOTAL SUMMARY</td>
+
+                    <!-- Status Summary Cells -->
+                    <td *ngIf="selectedStatuses.includes('Active')" class="td-center">{{ matrixTotals.active | number }}</td>
+                    <td *ngIf="selectedStatuses.includes('Transferred')" class="td-center">{{ matrixTotals.transferred | number }}</td>
+                    <td *ngIf="selectedStatuses.includes('Deceased')" class="td-center">{{ matrixTotals.deceased | number }}</td>
+
+                    <!-- Biometric Summary Cells -->
+                    <td *ngIf="selectedGenders.includes('Male')" class="td-center">{{ matrixTotals.male | number }}</td>
+                    <td *ngIf="selectedGenders.includes('Female')" class="td-center">{{ matrixTotals.female | number }}</td>
+
+                    <!-- Age Bracket Summary Cells -->
+                    <td *ngIf="selectedAgeBrackets.includes('Below 18 yrs.old')" class="td-center">{{ matrixTotals.below_18 | number }}</td>
+                    <td *ngIf="selectedAgeBrackets.includes('18 yrs.old and Above')" class="td-center border-right-split">{{ matrixTotals.above_18 | number }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

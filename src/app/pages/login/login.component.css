@@ -1,0 +1,186 @@
+/* ---------- Reset default browser spacing ---------- */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow-x: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ---------- Full screen container ---------- */
+.login-container {
+    min-height: 98vh;
+    width: 100%;
+    background: url('/assets/images/BusayFalls.jpg') no-repeat center center;
+    background-size: cover;
+    display: flex;
+    justify-content: flex-start;   /* Move card to LEFT */
+    align-items: center;
+    padding-left: 290px;            /* Space from left edge */
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+/* ---------- Dark overlay ---------- */
+/*
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    !*background: rgba(0, 0, 0, 0.2);*! !* Slightly darker for readability *!
+    pointer-events: none;
+    z-index: 1;
+}
+*/
+
+/* ---------- Login card ---------- */
+.login-card {
+    position: relative; /* Removed absolute positioning */
+    background: rgba(249, 249, 249, 0.90);
+    padding: 40px 30px;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    z-index: 2;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+/* ---------- Logo container ---------- */
+.logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+/* ---------- Logo images ---------- */
+.logo-container img {
+    height: 90px;
+    width: auto;
+    object-fit: contain;
+}
+
+/* ---------- Login heading ---------- */
+.login-card h2 {
+    margin-bottom: 25px;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #111;
+    font-family: 'Georgia', serif;
+}
+
+/* ---------- Form styling ---------- */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    font-size: 0.95rem;
+}
+
+/* ---------- Show password ---------- */
+.password-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.password-group input[type="password"],
+.password-group input[type="text"] {
+    flex: 1;
+}
+
+.show-password {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    white-space: nowrap;
+}
+
+.show-password input {
+    margin-right: 5px;
+}
+
+
+
+/* ---------- Error message ---------- */
+.error-message {
+    color: red;
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+/* ---------- Button styling ---------- */
+button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 6px;
+    border: none;
+    background-color: #1e3c72;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background-color: #16325c;
+}
+
+/* ---------- Responsive adjustments ---------- */
+@media (max-width: 1024px) {
+    .login-container {
+        justify-content: center;
+        padding-left: 0;
+    }
+
+    .login-card {
+        padding: 35px 25px;
+    }
+}
+
+@media (max-width: 768px) {
+    .login-container {
+        justify-content: center;
+        padding-left: 0;
+    }
+
+    .login-card {
+        padding: 30px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-card {
+        padding: 25px 15px;
+    }
+
+    .login-card h2 {
+        font-size: 1.3rem;
+    }
+
+    .form-group input {
+        padding: 10px;
+    }
+
+    button {
+        padding: 10px;
+        font-size: 0.95rem;
+    }
+
+    .logo-container img {
+        height: 50px;
+    }
+}

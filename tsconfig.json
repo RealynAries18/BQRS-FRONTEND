@@ -22,7 +22,13 @@
     "lib": [
       "ES2022",
       "dom"
-    ]
+    ],
+    "types": ["node"],
+    "paths": {
+      "stream": ["node_modules/stream-browserify"],
+      "events": ["node_modules/events"],
+      "buffer": ["node_modules/buffer"]
+    }
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

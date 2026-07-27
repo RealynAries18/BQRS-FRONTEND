@@ -1,0 +1,237 @@
+/* Host - Full Screen Layout Frame Configuration */
+:host {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    /* Universal font family framework for effortless reading */
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Enhanced Top Navbar Container */
+.top-navbar {
+    height: 90px; /* Tall header frame to ensure clear breathing room for large text headers */
+    width: 100%;
+    background-color: #1a3c70; /* Deep high-contrast blue matching the core table sub-headers */
+    color: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 30px;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    border-bottom: 3px solid #cbd5e1;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.nav-left h1 {
+    font-size: 26px; /* High-visibility primary dashboard banner size */
+    font-weight: 800;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    color: #ffffff;
+}
+
+/* Large Menu Button Hitbox Area */
+.menu-btn {
+    background: none;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 32px; /* Amplified icon font scale for ease of visibility */
+    margin-right: 20px;
+    cursor: pointer;
+    padding: 4px 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.menu-btn:focus, .menu-btn:hover {
+    outline: 3px solid #f59e0b; /* Bright gold focus indicators */
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* High-Contrast Sign Out Component Trigger */
+.logout-btn {
+    background-color: #ffffff;
+    color: #1a3c70;
+    border: 2px solid #ffffff;
+    padding: 12px 26px; /* Large clickable target surfaces to aid limited fine-motor control */
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px; /* Body scale text value for instant clarity */
+    font-weight: 800;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.logout-btn:hover, .logout-btn:focus {
+    background-color: #f1f5f9;
+    color: #102a50;
+    outline: 3px solid #f59e0b;
+}
+
+/* Core Layout Structural Splitter Split */
+.layout {
+    flex: 1;
+    display: flex;
+    width: 100%;
+    overflow: hidden;
+}
+
+/* High-Contrast Navigation Sidebar Panel */
+.sidebar {
+    width: 280px; /* Expanded layout footprint width to comfortably accommodate large texts */
+    background-color: #1a3c70;
+    color: #ffffff;
+    padding-top: 15px;
+    box-sizing: border-box;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
+    overflow: hidden;
+    border-right: 2px solid #cbd5e1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Sidebar Animation Collapsed State overrides */
+.sidebar.closed {
+    width: 0;
+    padding-top: 15px;
+    border-right: none;
+}
+
+/* Profile Metadata Block */
+.profile-section {
+    text-align: center;
+    padding: 25px 15px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+    margin-bottom: 10px;
+    flex-shrink: 0;
+}
+
+.profile-img {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #ffffff;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.profile-img {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #ffffff;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.profile-name {
+    font-weight: 700;
+    font-size: 17px;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+}
+
+/* Large Menu List Layout link containers */
+.sidebar ul.nav-links-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+.sidebar .nav-links-list > li {
+    padding: 18px 25px; /* Deep touch zone padding margins to support quick clicking actions */
+    cursor: pointer;
+    font-size: 17px;
+    color: #e2e8f0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+    display: block;
+    white-space: nowrap;
+}
+
+.sidebar .nav-links-list > li:hover,
+.sidebar .nav-links-list > li:focus {
+    background-color: #0c2346;
+    color: #ffffff;
+    outline: 3px inset #f59e0b;
+}
+
+/* Sub-Menu Layout Elements Configuration */
+.has-submenu {
+    padding: 0 !important; /* Reset layout spacing wrapper so inner headers control layout hits */
+}
+
+.submenu-header {
+    padding: 18px 25px;
+    color: #e2e8f0;
+    font-size: 17px;
+}
+
+.has-submenu:hover .submenu-header {
+    color: #ffffff;
+}
+
+.submenu-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background-color: rgba(0, 0, 0, 0.15); /* Slightly darker backing to isolate sub-options */
+}
+
+.submenu-list li {
+    padding: 14px 25px 14px 45px !important; /* Deep left padding indent to group children logically */
+    font-size: 15px;
+    color: #cbd5e1;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03) !important;
+}
+
+.submenu-list li:hover,
+.submenu-list li:focus {
+    background-color: #0c2346;
+    color: #ffffff;
+}
+
+/* Highlight Active Panel Sidebar Tab Location Selection */
+.sidebar .active {
+    background-color: #0c2346;
+    color: #f59e0b !important; /* Amber yellow for strict high-visibility structural indexing */
+    border-left: 6px solid #f59e0b; /* Left anchor indicator strips current system view location */
+    font-weight: 800;
+}
+
+/* Structural marker style if a component sub-page route matches the parent block */
+.sidebar .submenu-active .submenu-header {
+    color: #ffffff;
+}
+
+/* Main Content Workspace Panel Context with High Luminance Tint Shielding */
+.content {
+    flex: 1;
+    padding: 40px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    transition: width 0.3s ease;
+
+    /* MODIFIED: Reduced background tint opacity from 0.88 to 0.45 */
+    background:
+            linear-gradient(rgba(238, 242, 245, 0.45), rgba(238, 242, 245, 0.45)),
+            url('/assets/images/Babatngon_Municipal_Hall3.png') no-repeat center center;
+
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+/* Expand content layout workspace element safely */
+.content.expanded {
+    width: 100%;
+}

@@ -1,0 +1,53 @@
+<div class="login-container">
+    <div class="overlay"></div>
+
+    <div class="login-card">
+
+        <!-- Logos -->
+        <div class="logo-container">
+            <img src="/assets/images/province_logo.png" alt="Province Logo">
+            <img src="/assets/images/municipal_logo2.png" alt="Municipal Logo">
+        </div>
+
+        <h2>Babatngon Quick Attendance System</h2>
+
+        <form (ngSubmit)="login()">
+
+            <!-- Username -->
+            <div class="form-group">
+                <input type="text"
+                       name="username"
+                       [(ngModel)]="username"
+                       placeholder="Enter username"
+                       required>
+            </div>
+
+            <!-- Password + Show Checkbox -->
+            <div class="form-group password-group">
+                <input [type]="showPassword ? 'text' : 'password'"
+                       name="password"
+                       [(ngModel)]="password"
+                       placeholder="Enter password"
+                       required>
+            </div>
+            <div>
+
+                <label class="show-password">
+                    <input type="checkbox" (change)="togglePassword()">
+                    Show Password
+                </label>
+            </div><br>
+
+            <!-- Error message -->
+            <div class="error-message" *ngIf="errorMessage">
+                {{ errorMessage }}
+            </div>
+
+            <button type="submit" [disabled]="loading">
+                {{ loading ? 'Logging in...' : 'Login' }}
+            </button>
+
+        </form>
+
+    </div>
+</div>

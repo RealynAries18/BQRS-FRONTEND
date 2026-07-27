@@ -1,0 +1,55 @@
+<div class="dashboard-wrapper">
+    <div class="dashboard-header">
+        <h1>Babatngon Analytics Dashboard</h1>
+        <p>Real-time masterlist status, biometric enrollment rates, and entry log footprints</p>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card active-border">
+            <div class="kpi-label">Active Masterlist</div>
+            <div class="kpi-value">{{ grandTotalActive | number }}</div>
+        </div>
+        <div class="kpi-card transferred-border">
+            <div class="kpi-label">Transferred Out</div>
+            <div class="kpi-value">{{ grandTotalTransferred | number }}</div>
+        </div>
+        <div class="kpi-card deceased-border">
+            <div class="kpi-label">Deceased Records</div>
+            <div class="kpi-value">{{ grandTotalDeceased | number }}</div>
+        </div>
+        <div class="kpi-card biometric-border">
+            <div class="kpi-label">Biometric Coverage</div>
+            <div class="kpi-value">{{ getGlobalBiometricPercentage() }}%</div>
+            <div class="kpi-sub">{{ grandTotalBiometricsRegistered | number }} of {{ grandTotalPopulationForBiometrics | number }} registered</div>
+        </div>
+    </div>
+
+    <div class="main-content-card">
+        <h3 class="card-title">
+            <span>Today's Log Attendance Activity Footprint</span>
+            <span class="badge">Hourly Frequency Split</span>
+        </h3>
+
+        <div *ngIf="isLoadingTraffic" class="status-msg">Connecting to entry channels...</div>
+
+        <div *ngIf="!isLoadingTraffic">
+            <div *ngIf="trafficReport.length === 0" class="empty-msg">
+                No visitor/s have been processed through face recognition today.
+            </div>
+
+            <div *ngIf="trafficReport.length > 0" class="traffic-grid">
+                <div *ngFor="let item of trafficReport" class="traffic-item">
+                    <div class="traffic-header">
+                        <span>⏰ Hour Window: {{ item.log_hour }}</span>
+                        <span class="barangay-badge">{{ item.barangay }}</span>
+                    </div>
+                    <div class="traffic-stats">
+                        <span>Male Volume: <strong>{{ item.male_visitors | number }}</strong></span>
+                        <span>Female Volume: <strong>{{ item.female_visitors | number }}</strong></span>
+                        <span class="total-text">Total: {{ item.total_visitors | number }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

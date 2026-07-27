@@ -1,0 +1,234 @@
+<div class="constituent-header" role="banner">
+    <div class="header-section">
+        <h1>Constituent Master List</h1>
+        <button class="import-btn" (click)="openImportModal()">
+            Import List Spreadsheet
+        </button>
+    </div>
+</div>
+
+<br>
+
+<div class="constituent-wrapper">
+    <div class="filter-section" role="search">
+        <div class="filter-control dynamic-select">
+            <label for="brgySelect" class="accessible-label">Filter by Barangay</label>
+            <select id="brgySelect" [(ngModel)]="selectedBrgy" (change)="onFilterChange()">
+                <option value="">All Barangays</option>
+                <option *ngFor="let brgy of barangays" [value]="brgy.brgy_name">
+                    {{ brgy.brgy_name }}
+                </option>
+            </select>
+        </div>
+
+        <div class="filter-control search-field">
+            <label for="nameSearch" class="accessible-label">Search specific name</label>
+            <input id="nameSearch"
+                   type="text"
+                   [(ngModel)]="searchTerm"
+                   (input)="onFilterChange()"
+                   placeholder="Search (Lastname, Firstname, etc.)">
+        </div>
+
+        <div class="filter-control minimal-select">
+            <select id="pageSizeSelect" [(ngModel)]="itemsPerPage" (change)="onPageSizeChange()">
+                <option *ngFor="let size of pageSizes" [value]="size">{{ size }}</option>
+            </select>
+        </div>
+
+        <div class="filter-control action-button-group">
+            <button class="reload-btn" (click)="resetFilters()">
+                🔄 Reload
+            </button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+            <tr>
+                <th>NO.</th>
+                <th>ADDRESS (BARANGAY)</th>
+                <th>LAST NAME</th>
+                <th>FIRST NAME</th>
+                <th>MIDDLE NAME</th>
+                <th>NAME EXT.</th>
+                <th>DATE OF BIRTH</th>
+                <th>GENDER</th>
+                <th style="text-align: center;">AVAILABLE ACTIONS</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr *ngFor="let resident of constituents; let i = index"
+                [style.background]="resident.STATUS === 'T' ? '#f8fafc' : ''"
+                [style.opacity]="resident.STATUS === 'T' ? '0.85' : '1'">
+                <td>{{ (currentPage - 1) * itemsPerPage + i + 1 }}</td>
+                <td>
+                    <strong>{{ resident.ADDRESS }}</strong>
+                    <span *ngIf="resident.STATUS === 'T'" style="display: block; font-size: 11px; color: #ef4444; font-weight: 700; margin-top: 2px;">(TRANSFERRED)</span>
+                </td>
+                <td>{{ resident.L_NAME }}</td>
+                <td>{{ resident.F_NAME }}</td>
+                <td>{{ resident.M_NAME }}</td>
+                <td>{{ resident.NAME_EXT || '—' }}</td>
+                <td>{{ resident.BIRTHDAY }}</td>
+                <td>{{ resident.GENDER }}</td>
+
+                <td style="text-align: center;">
+                    <div style="display: inline-flex; gap: 8px;">
+                        <button class="accessible-action-btn edit"
+                                (click)="openEditModal(resident)"
+                                [disabled]="resident.STATUS === 'T'"
+                                [style.opacity]="resident.STATUS === 'T' ? '0.5' : '1'"
+                                [style.cursor]="resident.STATUS === 'T' ? 'not-allowed' : 'pointer'"
+                                style="padding: 6px 12px; background: #fef3c7; border: 1px solid #b45309; color: #92400e; font-weight: bold; border-radius: 4px;">
+                            ✏️ EDIT INFO
+                        </button>
+
+                        <button class="accessible-action-btn status-update"
+                                (click)="openDeleteModal(resident)"
+                                style="padding: 6px 12px; background: #eff6ff; border: 1px solid #3b82f6; color: #1d4ed8; font-weight: bold; border-radius: 4px;">
+                            🔄 STATUS UPDATE
+                        </button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr *ngIf="constituents.length === 0">
+                <td colspan="9" style="text-align: center; padding: 20px; font-weight: bold; color: #64748b;">
+                    NO RECORD/S FOUND
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination-footer" *ngIf="totalEntries > 0">
+        <div>
+            Showing entry <strong>{{ (currentPage - 1) * itemsPerPage + 1 }}</strong> to
+            <strong>{{ currentEndEntry }}</strong> of <strong>{{ totalEntries }}</strong> entries
+        </div>
+
+        <div class="pagination-buttons">
+            <button [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">Previous</button>
+            <span>Page <strong>{{ currentPage }}</strong> of <strong>{{ totalPages }}</strong></span>
+            <button [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">Next</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showImportModal" (click)='closeImportModal()'>
+    <div class="modal" *ngIf="!isImporting" (click)="$event.stopPropagation()">
+        <h2>Import New Constituents Ledger</h2>
+        <div class="file-upload-box">
+            <input type="file" (change)="onFileSelected($event)" accept=".xlsx,.xls">
+        </div>
+        <div class="file-error" *ngIf="fileError" style="color: red; margin-top: 10px;">
+            ⚠️ {{ fileError }}
+        </div>
+        <div class="modal-actions">
+            <button class="cancel-btn" (click)="closeImportModal()">Cancel</button>
+            <button class="confirm-btn" (click)="importFile()" [disabled]="!selectedFile">Upload</button>
+        </div>
+    </div>
+
+    <div class="progress-modal-content" *ngIf="isImporting" (click)="$event.stopPropagation()">
+        <div class="progress-container-frame">
+            <div>PROCESSING...</div>
+            <div class="progress-bar-track">
+                <div class="progress-bar-fill" [style.width.%]="importProgress"></div>
+            </div>
+            <div>{{ importProgress }} %</div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+    <div class="modal" (click)="$event.stopPropagation()" style="max-width: 600px; width: 100%;">
+        <h2 style="color: #1a3c70; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px;">✏️ Edit Constituent Information</h2>
+
+        <form (ngSubmit)="processEditInfo()" style="display: flex; flex-direction: column; gap: 14px; margin-top: 15px;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+                <label style="font-weight: bold; color: #1a3c70;">Barangay (Address)</label>
+                <select [(ngModel)]="editForm.ADDRESS" name="address" required style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; background: white; color: black;">
+                    <option value="" disabled>Select Barangay</option>
+                    <option *ngFor="let brgy of barangays" [value]="brgy.brgy_name">
+                        {{ brgy.brgy_name }}
+                    </option>
+                </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-weight: bold;">First Name</label>
+                    <input type="text" [(ngModel)]="editForm.F_NAME" name="f_name" required style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-weight: bold;">Middle Name</label>
+                    <input type="text" [(ngModel)]="editForm.M_NAME" name="m_name" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-weight: bold;">Last Name</label>
+                    <input type="text" [(ngModel)]="editForm.L_NAME" name="l_name" required style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-weight: bold;">Ext. Name</label>
+                    <input type="text" [(ngModel)]="editForm.NAME_EXT" name="name_ext" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-weight: bold;">Gender</label>
+                    <select [(ngModel)]="editForm.GENDER" name="gender" required style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; background: white;">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-weight: bold;">Date of Birth</label>
+                    <input type="date" [(ngModel)]="editForm.BIRTHDAY" name="birthday" required style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                </div>
+            </div>
+
+            <div class="modal-actions" style="margin-top: 20px;">
+                <button type="button" class="cancel-btn" (click)="closeEditModal()" [disabled]="isProcessingEdit">Cancel</button>
+                <button type="submit" class="confirm-btn" style="background-color: #0284c7; color: white;" [disabled]="isProcessingEdit">
+                    {{ isProcessingEdit ? 'Saving Changes...' : 'Save Profile Updates' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+        <h2>Update Registration Status</h2>
+        <p class="modal-subtext" *ngIf="selectedConstituentForDelete">
+            You are shifting the profile registration tracking status for <strong>{{ selectedConstituentForDelete.F_NAME }} {{ selectedConstituentForDelete.L_NAME }}</strong>.
+        </p>
+
+        <div style="margin: 20px 0; display: flex; flex-direction: column; gap: 12px;">
+            <label *ngIf="selectedConstituentForDelete && selectedConstituentForDelete.STATUS !== 'T'" style="display: flex; align-items: center; gap: 10px; font-weight: bold; cursor: pointer;">
+                <input type="radio" name="deleteReason" value="Transferred" [(ngModel)]="deleteReason"> Transferred out of Municipality
+            </label>
+            <label *ngIf="selectedConstituentForDelete && selectedConstituentForDelete.STATUS === 'T'" style="display: flex; align-items: center; gap: 10px; font-weight: bold; cursor: pointer; color: #16a34a;">
+                <input type="radio" name="deleteReason" value="Active" [(ngModel)]="deleteReason"> Activate Profile (Return to Master List)
+            </label>
+            <label style="display: flex; align-items: center; gap: 10px; font-weight: bold; cursor: pointer;">
+                <input type="radio" name="deleteReason" value="Deceased" [(ngModel)]="deleteReason"> Deceased
+            </label>
+        </div>
+
+        <div class="modal-actions">
+            <button class="cancel-btn" (click)="closeDeleteModal()" [disabled]="isProcessingDelete">Cancel</button>
+            <button class="confirm-btn" (click)="processDelete()" [disabled]="!deleteReason || isProcessingDelete">
+                {{ isProcessingDelete ? 'Processing...' : 'Confirm & Save Update' }}
+            </button>
+        </div>
+    </div>
+</div>

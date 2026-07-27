@@ -1,0 +1,69 @@
+<nav class="top-navbar" role="navigation" aria-label="Main System Header">
+    <div class="nav-left">
+        <h1>
+            <button class="menu-btn" (click)="toggleSidebar()" aria-label="Toggle Navigation Sidebar Menu">☰</button>
+            Babatngon Attendance System
+        </h1>
+    </div>
+
+    <div class="nav-right">
+        <button class="logout-btn" (click)="logout()" aria-label="Sign out of the system account">Sign Out</button>
+    </div>
+</nav>
+
+<div class="layout">
+
+    <div class="sidebar" [class.closed]="!sidebarOpen" role="complementary" aria-label="Admin Navigation Panel">
+
+        <div class="profile-section">
+            <img src="/assets/images/municipal_logo2.png" class="profile-img" alt="Babatngon Municipal Seal Logo">
+            <div class="profile-name">Administrator</div>
+        </div>
+
+        <ul class="nav-links-list">
+            <!-- Dashboard Link -->
+            <li routerLink="/dashboard" routerLinkActive="active" tabindex="0">
+                <strong>Dashboard</strong>
+            </li>
+            <li routerLink="/constituent-list" routerLinkActive="active" tabindex="0">
+                <strong>Constituents</strong>
+            </li>
+            <li routerLink="/statistics-report" routerLinkActive="active" tabindex="0">
+                <strong>Barangay Statistics Report</strong>
+            </li>
+
+
+<!--            &lt;!&ndash; Constituents Expandable Sub-Menu Wrapper &ndash;&gt;
+            <li class="has-submenu" routerLinkActive="submenu-active">
+                <div class="submenu-header" tabindex="0">
+                    <strong>Constituents</strong>
+                </div>
+
+                <ul class="submenu-list">
+                    <li routerLink="/constituent-list" routerLinkActive="active" tabindex="0">
+                        <span>Constituents Information</span>
+                    </li>
+                    <li routerLinkActive="active" tabindex="0">
+                        <span>Constituents Report</span>
+                    </li>
+                    <li routerLinkActive="active" tabindex="0">
+                        <span>Groups/Barangays</span>
+                    </li>
+                </ul>
+            </li>-->
+
+            <!--        <li routerLink="/statistics" routerLinkActive="active" tabindex="0">
+                            <strong>Statistics Dashboard</strong>
+                        </li>
+                        <li routerLink="/attendance-list" routerLinkActive="active" tabindex="0">
+                            <strong>Attendance</strong>
+                        </li>-->
+        </ul>
+
+    </div>
+
+    <main class="content" [class.expanded]="!sidebarOpen" role="main">
+        <router-outlet></router-outlet>
+    </main>
+
+</div>
