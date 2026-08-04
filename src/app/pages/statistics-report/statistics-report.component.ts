@@ -6,6 +6,12 @@ import { saveAs } from 'file-saver';
 // --- Global Type Declarations ---
 declare const Buffer: any;
 
+// --- FOR TABLE DESIGNS ---
+const thin = { style: 'thin', color: { argb: 'FFD1D5DB' } } as any;
+const allBorders = { top: thin, left: thin, bottom: thin, right: thin };
+const centerMiddle = { vertical: 'middle', horizontal: 'center' } as any;
+const groupFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } } as any;
+
 export interface MatrixRow {
   barangay: string;
   active_count: number;
@@ -314,11 +320,6 @@ export class StatisticsReportComponent implements OnInit {
   private buildStatisticsMatrixSheet(workbook: any) {
     const worksheet = workbook.addWorksheet('Statistics Matrix Overview');
 
-    const thin = { style: 'thin', color: { argb: 'FFD1D5DB' } } as any;
-    const allBorders = { top: thin, left: thin, bottom: thin, right: thin };
-    const centerMiddle = { vertical: 'middle', horizontal: 'center' } as any;
-    const groupFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } } as any;
-
     type ColDef = { header: string; key: keyof MatrixRow; color?: string };
     type GroupDef = { title: string; cols: ColDef[] };
 
@@ -426,10 +427,6 @@ export class StatisticsReportComponent implements OnInit {
 
   private buildConstituentsSheet(workbook: any) {
     const worksheet = workbook.addWorksheet('Constituents Report');
-    const thin = { style: 'thin', color: { argb: 'FFD1D5DB' } } as any;
-    const allBorders = { top: thin, left: thin, bottom: thin, right: thin };
-    const centerMiddle = { vertical: 'middle', horizontal: 'center' } as any;
-    const groupFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } } as any;
 
     type ColDef = { header: string; getValue: (item: ConstituentGranularItem) => string };
 
@@ -490,9 +487,9 @@ export class StatisticsReportComponent implements OnInit {
 
   private formatStatus(status: string): string {
     const s = (status || '').toLowerCase();
-    if (s === 'A' || s === 'Active') return 'Active';
-    if (s === 'T' || s === 'Transferred') return 'Transferred';
-    if (s === 'D' || s === 'Deceased') return 'Deceased';
+    if (s === 'a' || s === 'active') return 'Active';
+    if (s === 't' || s === 'transferred') return 'Transferred';
+    if (s === 'd' || s === 'deceased') return 'Deceased';
     return status;
   }
 
