@@ -301,7 +301,7 @@ export class StatisticsReportComponent implements OnInit {
       const workbook = new ExcelJS.Workbook();
 
       this.buildStatisticsMatrixSheet(workbook);
-      //TODO: add the second sheet
+      this.buildConstituentsSheet(workbook);
 
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
@@ -337,7 +337,7 @@ export class StatisticsReportComponent implements OnInit {
 
     const groups: GroupDef[] = [
       { title: 'STATUS', cols: statusCols },
-      { title: 'BIOMETRIC PROFILE', cols: biometricCols },
+      { title: 'GENDER', cols: biometricCols },
       { title: 'AGE BRACKET', cols: ageCols }
     ].filter(g => g.cols.length > 0);
 
@@ -422,5 +422,87 @@ export class StatisticsReportComponent implements OnInit {
     }
 
     return worksheet;
+  }
+
+  private buildConstituentsSheet(workbook: any) {
+    const worksheet = workbook.addWorksheet('Constituents Report');
+    const thin = { style: 'thin', color: { argb: 'FFD1D5DB' } } as any;
+    const allBorders = { top: thin, left: thin, bottom: thin, right: thin };
+    const centerMiddle = { vertical: 'middle', horizontal: 'center' } as any;
+    const groupFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } } as any;
+
+    type ColDef = { header: string; getValue: (item: ConstituentGranularItem) => string };
+
+    const cols: ColDef[] = [
+      { header: 'BARANGAY', getValue: item => item.barangay },
+      { header: 'FULL NAME', getValue: item => this.formatFullName(item) }
+    ];
+
+    if (this.selectedStatuses.length > 0) {
+      cols.push({ header: 'STATUS', getValue: item => this.formatStatus(item.status) });
+    }
+    if (this.selectedGenders.length > 0) {
+      cols.push({ header: 'GENDER', getValue: item => this.capitalize(item.gender) });
+    }
+    if (this.selectedAgeBrackets.length > 0) {
+      cols.push({ header: 'AGE GROUP', getValue: item => this.formatAgeGroup(item.birth_date) });
+    }
+
+    const headers = cols.map(c => c.header);
+    worksheet.addRow(headers);
+
+    worksheet.getRow(1).eachCell({ includeEmpty: true }, (cell: any) => {
+      cell.font = { bold: true, size: 11 };
+      cell.fill = groupFill;
+      cell.border = allBorders;
+      cell.alignment = centerMiddle;
+    });
+
+    this.filteredConstituentsList.forEach(item => {
+      const rowValues = cols.map(c => c.getValue(item));
+      const row = worksheet.addRow(rowValues);
+      row.eachCell({ includeEmpty: true }, (cell: any) => {
+        cell.border = allBorders;
+        cell.alignment = { horizontal: cell.col === 2 ? 'left' : 'center' } as any;
+      });
+    });
+
+    for (let c = 1; c <= headers.length; c++) {
+      const column = worksheet.getColumn(c);
+      let maxLength = 8;
+      column.eachCell({ includeEmpty: true }, (cell: any) => {
+        const text = cell.value != null ? cell.value.toString() : '';
+        maxLength = Math.max(maxLength, text.length);
+      });
+      column.width = maxLength + 4;
+    }
+
+    return worksheet;
+  }
+
+  private formatFullName(item: ConstituentGranularItem): string {
+    const last = this.capitalize(item.lastName);
+    const first = this.capitalize(item.firstName);
+    const middle = this.capitalize(item.middleName);
+    const ext = this.capitalize(item.nameExtension);
+    return [`${last},`, first, middle, ext].filter(Boolean).join(' ');
+  }
+
+  private formatStatus(status: string): string {
+    const s = (status || '').toLowerCase();
+    if (s === 'A' || s === 'Active') return 'Active';
+    if (s === 'T' || s === 'Transferred') return 'Transferred';
+    if (s === 'D' || s === 'Deceased') return 'Deceased';
+    return status;
+  }
+
+  private formatAgeGroup(birthDate?: string): string {
+    return this.calculateAge(birthDate) >= 18 ? 'Adult (18+)' : 'Minor';
+  }
+
+  private capitalize(str?: string): string {
+    if (!str) return '';
+    const trimmed = str.trim().toLowerCase();
+    return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
   }
 }
