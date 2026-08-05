@@ -133,7 +133,7 @@
     <div class="matrix-panel">
         <h3 class="panel-title-header">
             <span>Total Statistics Matrix Overview</span>
-            <button (click)="exportToExcel()" class="btn-export">📥 Export Data to Excel (.xlsx)</button>
+            <button (click)="openExportPasswordModal()" class="btn-export">📥 Export Data to Excel (.xlsx)</button>
         </h3>
 
         <div *ngIf="isLoadingMatrix" class="loading-state">Loading consolidated matrix layers...</div>
@@ -197,6 +197,49 @@
                 </tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+<!-- Export Password Modal -->
+<div class="modal-overlay" *ngIf="showExportPasswordModal" (click)="closeExportPasswordModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+        <h3 class="modal-title">Export to Excel</h3>
+        <p class="modal-subtitle">
+            Name the file and set an edit password. The file opens without a password;
+            the password below is required to edit it.
+        </p>
+
+        <label class="modal-label">
+            File name
+            <input type="text" class="modal-input"
+                   [(ngModel)]="exportFileName" [disabled]="isExporting"
+                   (keyup.enter)="confirmExport()" />
+        </label>
+
+        <label class="modal-label">
+            Password
+            <input type="password" class="modal-input"
+                   [(ngModel)]="exportPassword" [disabled]="isExporting"
+                   autocomplete="new-password" (keyup.enter)="confirmExport()" />
+        </label>
+
+        <label class="modal-label">
+            Confirm password
+            <input type="password" class="modal-input"
+                   [(ngModel)]="exportPasswordConfirm" [disabled]="isExporting"
+                   autocomplete="new-password" (keyup.enter)="confirmExport()" />
+        </label>
+
+        <p class="modal-error" *ngIf="exportPasswordError">{{ exportPasswordError }}</p>
+
+        <div class="modal-actions">
+            <button type="button" class="btn-modal-secondary"
+                    (click)="closeExportPasswordModal()" [disabled]="isExporting">Cancel</button>
+            <button type="button" class="btn-modal-primary"
+                    (click)="confirmExport()" [disabled]="isExporting">
+                {{ isExporting ? 'Exporting…' : 'Export' }}
+            </button>
         </div>
     </div>
 </div>

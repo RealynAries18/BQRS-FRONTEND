@@ -302,16 +302,78 @@ export class StatisticsReportComponent implements OnInit {
     });
   }
 
-  async exportToExcel() {
+  // --- Export password modal state ---
+  showExportPasswordModal = false;
+  exportFileName = 'Statistics_Matrix_Overview';
+  exportPassword = '';
+  exportPasswordConfirm = '';
+  exportPasswordError: string | null = null;
+  isExporting = false;
+
+  openExportPasswordModal() {
+    this.exportPassword = '';
+    this.exportPasswordConfirm = '';
+    this.exportPasswordError = null;
+    this.showExportPasswordModal = true;
+  }
+
+  closeExportPasswordModal() {
+    if (this.isExporting) return;
+    this.showExportPasswordModal = false;
+  }
+
+  async confirmExport() {
+    const name = (this.exportFileName || '').trim();
+    const pw = this.exportPassword;
+    const confirm = this.exportPasswordConfirm;
+
+    if (!name) {
+      this.exportPasswordError = 'File name is required.';
+      return;
+    }
+    if (!pw || pw.length < 4) {
+      this.exportPasswordError = 'Password must be at least 4 characters.';
+      return;
+    }
+    if (pw !== confirm) {
+      this.exportPasswordError = 'Passwords do not match.';
+      return;
+    }
+
+    this.isExporting = true;
+    this.exportPasswordError = null;
+    try {
+      await this.exportToExcel(name, pw);
+      this.showExportPasswordModal = false;
+    } catch (error) {
+      console.error('Excel Export failed:', error);
+    } finally {
+      this.isExporting = false;
+    }
+  }
+
+  async exportToExcel(fileName: string, password: string) {
     try {
       const workbook = new ExcelJS.Workbook();
 
       this.buildStatisticsMatrixSheet(workbook);
       this.buildConstituentsSheet(workbook);
 
+      workbook.eachSheet((worksheet: any) => {
+        worksheet.protect(password, {
+          selectLockedCells: false,
+          selectUnlockedCells: false,
+          formatCells: true,
+          formatColumns: true,
+          formatRows: true,
+          insertRows: false,
+          deleteRows: false
+        });
+      });
+
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      saveAs(blob, 'Statistics_Matrix_Overview.xlsx');
+      saveAs(blob, `${fileName}.xlsx`);
     } catch (error) {
       console.error('Excel Export failed:', error);
     }
