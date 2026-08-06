@@ -360,6 +360,7 @@ export class StatisticsReportComponent implements OnInit {
       this.buildConstituentsSheet(workbook);
 
       workbook.eachSheet((worksheet: any) => {
+        const isConstituentsSheet = worksheet.name === 'Constituents Report';
         worksheet.protect(password, {
           selectLockedCells: false,
           selectUnlockedCells: false,
@@ -367,7 +368,9 @@ export class StatisticsReportComponent implements OnInit {
           formatColumns: true,
           formatRows: true,
           insertRows: false,
-          deleteRows: false
+          deleteRows: false,
+          autoFilter: isConstituentsSheet,
+          sort: isConstituentsSheet
         });
       });
 
@@ -516,6 +519,11 @@ export class StatisticsReportComponent implements OnInit {
       cell.border = allBorders;
       cell.alignment = centerMiddle;
     });
+
+    worksheet.autoFilter = {
+      from: { row: 1, column: 1 },
+      to: { row: 1, column: headers.length }
+    };
 
     this.filteredConstituentsList.forEach(item => {
       const rowValues = cols.map(c => c.getValue(item));
