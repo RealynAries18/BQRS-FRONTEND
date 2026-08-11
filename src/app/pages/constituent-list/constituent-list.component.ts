@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
 
 // ==========================================
 // CORE COMPONENT MODEL INTERFACES
@@ -48,11 +49,12 @@ export class ConstituentListComponent implements OnInit {
     selectedFile: File | null = null;
     fileError: string | null = null;
 
-    // Edit profile modal states
+    // Combined Edit profile & Status update modal states
     showEditModal: boolean = false;
     isProcessingEdit: boolean = false;
     selectedConstituentForEdit: ConstituentData | null = null;
     originalFormCopy: any = null;
+    editStatusReason: 'Transferred' | 'Deceased' | 'Active' | '' = '';
     editForm: any = {
         ADDRESS: '',
         F_NAME: '',
@@ -63,18 +65,11 @@ export class ConstituentListComponent implements OnInit {
         BIRTHDAY: ''
     };
 
-    // Status update delete modal states
-    showDeleteModal: boolean = false;
-    isProcessingDelete: boolean = false;
-    selectedConstituentForDelete: ConstituentData | null = null;
-    deleteReason: 'Transferred' | 'Deceased' | 'Active' | '' = '';
-
     // =========================================================
     // API BASE ROUTE CONFIGURATIONS
     // =========================================================
     private apiBase = 'http://127.0.0.1:8000/api';
     private constituentsUrl = `${this.apiBase}/constituents`;
-    // FIXED: Maps accurately to /api/constituents/barangays to eliminate the 404 exception
     private barangaysUrl = `${this.constituentsUrl}/barangays`;
 
     constructor(private http: HttpClient) {}
@@ -215,11 +210,12 @@ export class ConstituentListComponent implements OnInit {
     }
 
     // =========================================================
-    // EDIT ROW OPERATIONS LAYER
+    // COMBINED EDIT & STATUS UPDATE OPERATIONS LAYER
     // =========================================================
     openEditModal(resident: ConstituentData): void {
         this.selectedConstituentForEdit = resident;
         this.originalFormCopy = { ...resident };
+        this.editStatusReason = ''; // Reset status radio options on open
 
         const exactAddressString = resident.ADDRESS ? resident.ADDRESS.toString().trim() : '';
 
@@ -245,6 +241,7 @@ export class ConstituentListComponent implements OnInit {
         if (!this.isProcessingEdit) {
             this.showEditModal = false;
             this.selectedConstituentForEdit = null;
+            this.editStatusReason = '';
         }
     }
 
@@ -252,13 +249,27 @@ export class ConstituentListComponent implements OnInit {
         if (!this.selectedConstituentForEdit) return;
 
         this.isProcessingEdit = true;
-        const payload = {
+
+        const infoPayload = {
             resident_id: this.selectedConstituentForEdit.resident_id,
             original: this.originalFormCopy,
             updated: this.editForm
         };
 
-        this.http.post<any>(`${this.constituentsUrl}/update-info`, payload).subscribe({
+        // Prepare requests array depending on whether a status reason was selected
+        const requests = [
+            this.http.post<any>(`${this.constituentsUrl}/update-info`, infoPayload)
+        ];
+
+        if (this.editStatusReason) {
+            const statusPayload = {
+                resident_id: this.selectedConstituentForEdit.resident_id,
+                remarks: this.editStatusReason
+            };
+            requests.push(this.http.post<any>(`${this.constituentsUrl}/update-status`, statusPayload));
+        }
+
+        forkJoin(requests).subscribe({
             next: () => {
                 this.isProcessingEdit = false;
                 this.showEditModal = false;
@@ -266,46 +277,7 @@ export class ConstituentListComponent implements OnInit {
             },
             error: (err) => {
                 this.isProcessingEdit = false;
-                alert(err?.error?.message || 'An error occurred while updating profile.');
-            }
-        });
-    }
-
-    // =========================================================
-    // STATUS REGISTRATION DELETION CONTROLS LAYER
-    // =========================================================
-    openDeleteModal(resident: ConstituentData): void {
-        this.selectedConstituentForDelete = resident;
-        this.deleteReason = '';
-        this.isProcessingDelete = false;
-        this.showDeleteModal = true;
-    }
-
-    closeDeleteModal(): void {
-        if (!this.isProcessingDelete) {
-            this.showDeleteModal = false;
-            this.selectedConstituentForDelete = null;
-        }
-    }
-
-    processDelete(): void {
-        if (!this.selectedConstituentForDelete || !this.deleteReason) return;
-
-        this.isProcessingDelete = true;
-        const payload = {
-            resident_id: this.selectedConstituentForDelete.resident_id,
-            remarks: this.deleteReason
-        };
-
-        this.http.post<any>(`${this.constituentsUrl}/update-status`, payload).subscribe({
-            next: () => {
-                this.isProcessingDelete = false;
-                this.showDeleteModal = false;
-                this.fetchConstituentRecords();
-            },
-            error: (err) => {
-                this.isProcessingDelete = false;
-                alert(err?.error?.message || 'Failed to update registration status.');
+                alert(err?.error?.message || 'An error occurred while updating profile and status.');
             }
         });
     }

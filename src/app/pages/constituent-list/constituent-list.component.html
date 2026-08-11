@@ -22,12 +22,12 @@
         </div>
 
         <div class="filter-control search-field">
-            <label for="nameSearch" class="accessible-label">Search specific name</label>
+            <label for="nameSearch" class="accessible-label">Search Name</label>
             <input id="nameSearch"
                    type="text"
                    [(ngModel)]="searchTerm"
                    (input)="onFilterChange()"
-                   placeholder="Search (Lastname, Firstname, etc.)">
+                   placeholder="Search Name">
         </div>
 
         <div class="filter-control minimal-select">
@@ -47,14 +47,14 @@
         <table>
             <thead>
             <tr>
-                <th>NO.</th>
-                <th>ADDRESS (BARANGAY)</th>
-                <th>LAST NAME</th>
-                <th>FIRST NAME</th>
-                <th>MIDDLE NAME</th>
-                <th>NAME EXT.</th>
-                <th>DATE OF BIRTH</th>
-                <th>GENDER</th>
+                <th class="bold-index-column" style="width: 60px;">NO.</th>
+                <th class="text-left-align">ADDRESS (BARANGAY)</th>
+                <th class="text-left-align">LAST NAME</th>
+                <th class="text-left-align">FIRST NAME</th>
+                <th class="text-left-align">MIDDLE NAME</th>
+                <th class="text-left-align">NAME EXT.</th>
+                <th class="text-left-align">DATE OF BIRTH</th>
+                <th class="text-left-align">GENDER</th>
                 <th style="text-align: center;">AVAILABLE ACTIONS</th>
             </tr>
             </thead>
@@ -63,40 +63,30 @@
             <tr *ngFor="let resident of constituents; let i = index"
                 [style.background]="resident.STATUS === 'T' ? '#f8fafc' : ''"
                 [style.opacity]="resident.STATUS === 'T' ? '0.85' : '1'">
-                <td>{{ (currentPage - 1) * itemsPerPage + i + 1 }}</td>
-                <td>
+                <td class="bold-index-column" style="text-align: center;">{{ (currentPage - 1) * itemsPerPage + i + 1 }}</td>
+                <td class="text-left-align">
                     <strong>{{ resident.ADDRESS }}</strong>
                     <span *ngIf="resident.STATUS === 'T'" style="display: block; font-size: 11px; color: #ef4444; font-weight: 700; margin-top: 2px;">(TRANSFERRED)</span>
                 </td>
-                <td>{{ resident.L_NAME }}</td>
-                <td>{{ resident.F_NAME }}</td>
-                <td>{{ resident.M_NAME }}</td>
-                <td>{{ resident.NAME_EXT || '—' }}</td>
-                <td>{{ resident.BIRTHDAY }}</td>
-                <td>{{ resident.GENDER }}</td>
+                <td class="text-left-align">{{ resident.L_NAME }}</td>
+                <td class="text-left-align">{{ resident.F_NAME }}</td>
+                <td class="text-left-align">{{ resident.M_NAME }}</td>
+                <td class="text-left-align">{{ resident.NAME_EXT || '—' }}</td>
+                <td class="text-left-align tabular-dates">{{ resident.BIRTHDAY }}</td>
+                <td class="text-left-align">{{ resident.GENDER }}</td>
 
-                <td style="text-align: center;">
+                <td class="action-cell" style="text-align: center; vertical-align: middle;">
                     <div style="display: inline-flex; gap: 8px;">
                         <button class="accessible-action-btn edit"
-                                (click)="openEditModal(resident)"
-                                [disabled]="resident.STATUS === 'T'"
-                                [style.opacity]="resident.STATUS === 'T' ? '0.5' : '1'"
-                                [style.cursor]="resident.STATUS === 'T' ? 'not-allowed' : 'pointer'"
-                                style="padding: 6px 12px; background: #fef3c7; border: 1px solid #b45309; color: #92400e; font-weight: bold; border-radius: 4px;">
-                            ✏️ EDIT INFO
-                        </button>
-
-                        <button class="accessible-action-btn status-update"
-                                (click)="openDeleteModal(resident)"
-                                style="padding: 6px 12px; background: #eff6ff; border: 1px solid #3b82f6; color: #1d4ed8; font-weight: bold; border-radius: 4px;">
-                            🔄 STATUS UPDATE
+                                (click)="openEditModal(resident)">
+                            ✏️ EDIT & STATUS
                         </button>
                     </div>
                 </td>
             </tr>
 
             <tr *ngIf="constituents.length === 0">
-                <td colspan="9" style="text-align: center; padding: 20px; font-weight: bold; color: #64748b;">
+                <td colspan="9" class="empty-fallback-notification">
                     NO RECORD/S FOUND
                 </td>
             </tr>
@@ -105,15 +95,15 @@
     </div>
 
     <div class="pagination-footer" *ngIf="totalEntries > 0">
-        <div>
+        <div class="page-info">
             Showing entry <strong>{{ (currentPage - 1) * itemsPerPage + 1 }}</strong> to
             <strong>{{ currentEndEntry }}</strong> of <strong>{{ totalEntries }}</strong> entries
         </div>
 
         <div class="pagination-buttons">
-            <button [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">Previous</button>
-            <span>Page <strong>{{ currentPage }}</strong> of <strong>{{ totalPages }}</strong></span>
-            <button [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">Next</button>
+            <button class="accessible-nav-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">Previous</button>
+            <span class="page-indicator">Page <strong>{{ currentPage }}</strong> of <strong>{{ totalPages }}</strong></span>
+            <button class="accessible-nav-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">Next</button>
         </div>
     </div>
 </div>
@@ -121,10 +111,10 @@
 <div class="modal-overlay" *ngIf="showImportModal" (click)='closeImportModal()'>
     <div class="modal" *ngIf="!isImporting" (click)="$event.stopPropagation()">
         <h2>Import New Constituents Ledger</h2>
-        <div class="file-upload-box">
+        <div class="file-upload-box" style="margin-top: 20px;">
             <input type="file" (change)="onFileSelected($event)" accept=".xlsx,.xls">
         </div>
-        <div class="file-error" *ngIf="fileError" style="color: red; margin-top: 10px;">
+        <div class="file-error" *ngIf="fileError">
             ⚠️ {{ fileError }}
         </div>
         <div class="modal-actions">
@@ -135,23 +125,24 @@
 
     <div class="progress-modal-content" *ngIf="isImporting" (click)="$event.stopPropagation()">
         <div class="progress-container-frame">
-            <div>PROCESSING...</div>
+            <div class="processing-title">PROCESSING...</div>
             <div class="progress-bar-track">
                 <div class="progress-bar-fill" [style.width.%]="importProgress"></div>
             </div>
-            <div>{{ importProgress }} %</div>
+            <div class="progress-percentage-text">{{ importProgress }} %</div>
         </div>
     </div>
 </div>
 
+<!-- MERGED EDIT & STATUS UPDATE MODAL -->
 <div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
-    <div class="modal" (click)="$event.stopPropagation()" style="max-width: 600px; width: 100%;">
-        <h2 style="color: #1a3c70; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px;">✏️ Edit Constituent Information</h2>
+    <div class="modal" (click)="$event.stopPropagation()" style="max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto;">
+        <h2>✏️ Edit Constituent Information & Status</h2>
 
         <form (ngSubmit)="processEditInfo()" style="display: flex; flex-direction: column; gap: 14px; margin-top: 15px;">
-            <div style="display: flex; flex-direction: column; gap: 4px;">
-                <label style="font-weight: bold; color: #1a3c70;">Barangay (Address)</label>
-                <select [(ngModel)]="editForm.ADDRESS" name="address" required style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; background: white; color: black;">
+            <div class="filter-control" style="width: 100%;">
+                <label class="accessible-label">Barangay (Address)</label>
+                <select [(ngModel)]="editForm.ADDRESS" name="address" [disabled]="selectedConstituentForEdit?.STATUS === 'T' && editStatusReason !== 'Active'" [ngClass]="{'light-red-disabled': selectedConstituentForEdit?.STATUS === 'T' && editStatusReason !== 'Active'}" required style="height: 48px;">
                     <option value="" disabled>Select Barangay</option>
                     <option *ngFor="let brgy of barangays" [value]="brgy.brgy_name">
                         {{ brgy.brgy_name }}
@@ -160,75 +151,66 @@
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-weight: bold;">First Name</label>
-                    <input type="text" [(ngModel)]="editForm.F_NAME" name="f_name" required style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                <div class="filter-control" style="width: 100%;">
+                    <label class="accessible-label">First Name</label>
+                    <input type="text" [(ngModel)]="editForm.F_NAME" name="f_name" [disabled]="selectedConstituentForEdit?.STATUS === 'T' && editStatusReason !== 'Active'" [ngClass]="{'light-red-disabled': selectedConstituentForEdit?.STATUS === 'T' && editStatusReason !== 'Active'}" required style="height: 48px;">
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-weight: bold;">Middle Name</label>
-                    <input type="text" [(ngModel)]="editForm.M_NAME" name="m_name" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                <div class="filter-control" style="width: 100%;">
+                    <label class="accessible-label">Middle Name</label>
+                    <input type="text" [(ngModel)]="editForm.M_NAME" name="m_name" [disabled]="selectedConstituentForEdit?.STATUS === 'T' && editStatusReason !== 'Active'" [ngClass]="{'light-red-disabled': selectedConstituentForEdit?.STATUS === 'T' && editStatusReason !== 'Active'}" style="height: 48px;">
                 </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-weight: bold;">Last Name</label>
-                    <input type="text" [(ngModel)]="editForm.L_NAME" name="l_name" required style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                <div class="filter-control" style="width: 100%;">
+                    <label class="accessible-label">Last Name</label>
+                    <input type="text" [(ngModel)]="editForm.L_NAME" name="l_name" [disabled]="selectedConstituentForEdit?.STATUS === 'T' && editStatusReason !== 'Active'" [ngClass]="{'light-red-disabled': selectedConstituentForEdit?.STATUS === 'T' && editStatusReason !== 'Active'}" required style="height: 48px;">
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-weight: bold;">Ext. Name</label>
-                    <input type="text" [(ngModel)]="editForm.NAME_EXT" name="name_ext" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                <div class="filter-control" style="width: 100%;">
+                    <label class="accessible-label">Ext. Name</label>
+                    <input type="text" [(ngModel)]="editForm.NAME_EXT" name="name_ext" [disabled]="selectedConstituentForEdit?.STATUS === 'T' && editStatusReason !== 'Active'" [ngClass]="{'light-red-disabled': selectedConstituentForEdit?.STATUS === 'T' && editStatusReason !== 'Active'}" style="height: 48px;">
                 </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-weight: bold;">Gender</label>
-                    <select [(ngModel)]="editForm.GENDER" name="gender" required style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; background: white;">
+                <div class="filter-control" style="width: 100%;">
+                    <label class="accessible-label">Gender</label>
+                    <select [(ngModel)]="editForm.GENDER" name="gender" [disabled]="selectedConstituentForEdit?.STATUS === 'T' && editStatusReason !== 'Active'" [ngClass]="{'light-red-disabled': selectedConstituentForEdit?.STATUS === 'T' && editStatusReason !== 'Active'}" required style="height: 48px;">
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
                     </select>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-weight: bold;">Date of Birth</label>
-                    <input type="date" [(ngModel)]="editForm.BIRTHDAY" name="birthday" required style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                <div class="filter-control" style="width: 100%;">
+                    <label class="accessible-label">Date of Birth</label>
+                    <input type="date" [(ngModel)]="editForm.BIRTHDAY" name="birthday" [disabled]="selectedConstituentForEdit?.STATUS === 'T' && editStatusReason !== 'Active'" [ngClass]="{'light-red-disabled': selectedConstituentForEdit?.STATUS === 'T' && editStatusReason !== 'Active'}" required style="height: 48px;">
+                </div>
+            </div>
+
+            <!-- Integrated Status Update Section -->
+            <div style="border-top: 2px solid #e2e8f0; padding-top: 14px; margin-top: 6px;">
+                <label class="accessible-label" style="margin-bottom: 10px;">Registration Status</label>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <label *ngIf="selectedConstituentForEdit && selectedConstituentForEdit.STATUS !== 'T'" style="display: flex; align-items: center; gap: 10px; font-weight: 500; cursor: pointer; color: #111111; font-size: 15px;">
+                        <input type="radio" name="editStatusReason" value="Transferred" [(ngModel)]="editStatusReason" style="width: 18px; height: 18px; accent-color: #1a3c70;"> Transferred out of Municipality
+                    </label>
+                    <label *ngIf="selectedConstituentForEdit && selectedConstituentForEdit.STATUS === 'T'" style="display: flex; align-items: center; gap: 10px; font-weight: 600; cursor: pointer; color: #16a34a; font-size: 15px;">
+                        <input type="radio" name="editStatusReason" value="Active" [(ngModel)]="editStatusReason" style="width: 18px; height: 18px; accent-color: #16a34a;"> Activate Profile (Return to Master List)
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; font-weight: 500; cursor: pointer; color: #111111; font-size: 15px;">
+                        <input type="radio" name="editStatusReason" value="Deceased" [(ngModel)]="editStatusReason" style="width: 18px; height: 18px; accent-color: #1a3c70;"> Deceased
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; font-weight: 500; cursor: pointer; color: #64748b; font-size: 15px;">
+                        <input type="radio" name="editStatusReason" value="" [(ngModel)]="editStatusReason" style="width: 18px; height: 18px; accent-color: #1a3c70;"> Keep Current Status / No Change
+                    </label>
                 </div>
             </div>
 
             <div class="modal-actions" style="margin-top: 20px;">
                 <button type="button" class="cancel-btn" (click)="closeEditModal()" [disabled]="isProcessingEdit">Cancel</button>
-                <button type="submit" class="confirm-btn" style="background-color: #0284c7; color: white;" [disabled]="isProcessingEdit">
-                    {{ isProcessingEdit ? 'Saving Changes...' : 'Save Profile Updates' }}
+                <button type="submit" class="confirm-btn" [disabled]="isProcessingEdit">
+                    {{ isProcessingEdit ? 'Saving Changes...' : 'Save Profile & Status Updates' }}
                 </button>
             </div>
         </form>
-    </div>
-</div>
-
-<div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
-    <div class="modal" (click)="$event.stopPropagation()">
-        <h2>Update Registration Status</h2>
-        <p class="modal-subtext" *ngIf="selectedConstituentForDelete">
-            You are shifting the profile registration tracking status for <strong>{{ selectedConstituentForDelete.F_NAME }} {{ selectedConstituentForDelete.L_NAME }}</strong>.
-        </p>
-
-        <div style="margin: 20px 0; display: flex; flex-direction: column; gap: 12px;">
-            <label *ngIf="selectedConstituentForDelete && selectedConstituentForDelete.STATUS !== 'T'" style="display: flex; align-items: center; gap: 10px; font-weight: bold; cursor: pointer;">
-                <input type="radio" name="deleteReason" value="Transferred" [(ngModel)]="deleteReason"> Transferred out of Municipality
-            </label>
-            <label *ngIf="selectedConstituentForDelete && selectedConstituentForDelete.STATUS === 'T'" style="display: flex; align-items: center; gap: 10px; font-weight: bold; cursor: pointer; color: #16a34a;">
-                <input type="radio" name="deleteReason" value="Active" [(ngModel)]="deleteReason"> Activate Profile (Return to Master List)
-            </label>
-            <label style="display: flex; align-items: center; gap: 10px; font-weight: bold; cursor: pointer;">
-                <input type="radio" name="deleteReason" value="Deceased" [(ngModel)]="deleteReason"> Deceased
-            </label>
-        </div>
-
-        <div class="modal-actions">
-            <button class="cancel-btn" (click)="closeDeleteModal()" [disabled]="isProcessingDelete">Cancel</button>
-            <button class="confirm-btn" (click)="processDelete()" [disabled]="!deleteReason || isProcessingDelete">
-                {{ isProcessingDelete ? 'Processing...' : 'Confirm & Save Update' }}
-            </button>
-        </div>
     </div>
 </div>

@@ -1,3 +1,4 @@
+<!-- dashboard.component.html -->
 <div class="dashboard-wrapper">
     <div class="dashboard-header">
         <h1>Babatngon Analytics Dashboard</h1>
@@ -25,10 +26,16 @@
     </div>
 
     <div class="main-content-card">
-        <h3 class="card-title">
-            <span>Today's Log Attendance Activity Footprint</span>
-            <span class="badge">Hourly Frequency Split</span>
-        </h3>
+        <div class="card-header-flex">
+            <h3 class="card-title">
+                <span>Today's Log Attendance Activity</span>
+            </h3>
+            <div class="filter-control minimal-select">
+                <select id="trafficPageSize" [(ngModel)]="trafficPageSize" (change)="onTrafficPageSizeChange()">
+                    <option *ngFor="let size of pageSizes" [value]="size">{{ size }}</option>
+                </select>
+            </div>
+        </div>
 
         <div *ngIf="isLoadingTraffic" class="status-msg">Connecting to entry channels...</div>
 
@@ -37,17 +44,51 @@
                 No visitor/s have been processed through face recognition today.
             </div>
 
-            <div *ngIf="trafficReport.length > 0" class="traffic-grid">
-                <div *ngFor="let item of trafficReport" class="traffic-item">
-                    <div class="traffic-header">
-                        <span>⏰ Hour Window: {{ item.log_hour }}</span>
-                        <span class="barangay-badge">{{ item.barangay }}</span>
-                    </div>
-                    <div class="traffic-stats">
-                        <span>Male Volume: <strong>{{ item.male_visitors | number }}</strong></span>
-                        <span>Female Volume: <strong>{{ item.female_visitors | number }}</strong></span>
-                        <span class="total-text">Total: {{ item.total_visitors | number }}</span>
-                    </div>
+            <div class="table-container" *ngIf="trafficReport.length > 0">
+                <table>
+                    <thead>
+                    <tr>
+                        <th class="bold-index-column" style="width: 60px; text-align: center;">NO.</th>
+                        <th class="text-left-align">HOUR WINDOW</th>
+                        <th class="text-left-align">BARANGAY</th>
+                        <th style="text-align: center;">MALE VOLUME</th>
+                        <th style="text-align: center;">FEMALE VOLUME</th>
+                        <th style="text-align: center;">TOTAL VISITORS</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr *ngFor="let item of trafficReport; let i = index">
+                        <td class="bold-index-column" style="text-align: center;">{{ (currentTrafficPage - 1) * trafficPageSize + i + 1 }}</td>
+                        <td class="text-left-align">
+                            <strong *ngIf="!isSameAsPreviousHour(i)">⏰ {{ item.log_hour }}</strong>
+                        </td>
+                        <td class="text-left-align">
+                            <span class="barangay-badge-table">{{ item.barangay }}</span>
+                        </td>
+                        <td style="text-align: center;" class="tabular-nums">
+                            {{ item.male_visitors | number }}
+                        </td>
+                        <td style="text-align: center;" class="tabular-nums">
+                            {{ item.female_visitors | number }}
+                        </td>
+                        <td style="text-align: center; font-weight: 800; color: #0d3b66;" class="tabular-nums">
+                            {{ item.total_visitors | number }}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination-footer" *ngIf="totalTrafficEntries > 0">
+                <div class="page-info">
+                    Showing entry <strong>{{ (currentTrafficPage - 1) * trafficPageSize + 1 }}</strong> to
+                    <strong>{{ currentTrafficEndEntry }}</strong> of <strong>{{ totalTrafficEntries }}</strong> entries
+                </div>
+
+                <div class="pagination-buttons">
+                    <button class="accessible-nav-btn" [disabled]="currentTrafficPage === 1" (click)="goToTrafficPage(currentTrafficPage - 1)">Previous</button>
+                    <span class="page-indicator">Page <strong>{{ currentTrafficPage }}</strong> of <strong>{{ totalTrafficPages }}</strong></span>
+                    <button class="accessible-nav-btn" [disabled]="currentTrafficPage === totalTrafficPages" (click)="goToTrafficPage(currentTrafficPage + 1)">Next</button>
                 </div>
             </div>
         </div>

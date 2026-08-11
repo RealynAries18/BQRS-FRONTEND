@@ -6,6 +6,12 @@ import { saveAs } from 'file-saver';
 // --- Global Type Declarations ---
 declare const Buffer: any;
 
+// --- FOR TABLE DESIGNS ---
+const thin = { style: 'thin', color: { argb: 'FFD1D5DB' } } as any;
+const allBorders = { top: thin, left: thin, bottom: thin, right: thin };
+const centerMiddle = { vertical: 'middle', horizontal: 'center' } as any;
+const groupFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } } as any;
+
 export interface MatrixRow {
     barangay: string;
     active_count: number;
@@ -296,24 +302,274 @@ export class StatisticsReportComponent implements OnInit {
         });
     }
 
-    async exportToExcel() {
+    // --- Export password modal state ---
+    showExportPasswordModal = false;
+    exportFileName = 'Statistics_Matrix_Overview';
+    exportPassword = '';
+    exportPasswordConfirm = '';
+    exportPasswordError: string | null = null;
+    isExporting = false;
+
+    openExportPasswordModal() {
+        this.exportPassword = '';
+        this.exportPasswordConfirm = '';
+        this.exportPasswordError = null;
+        this.showExportPasswordModal = true;
+    }
+
+    closeExportPasswordModal() {
+        if (this.isExporting) return;
+        this.showExportPasswordModal = false;
+    }
+
+    async confirmExport() {
+        const name = (this.exportFileName || '').trim();
+        const pw = this.exportPassword;
+        const confirm = this.exportPasswordConfirm;
+
+        if (!name) {
+            this.exportPasswordError = 'File name is required.';
+            return;
+        }
+        if (!pw || pw.length < 4) {
+            this.exportPasswordError = 'Password must be at least 4 characters.';
+            return;
+        }
+        if (pw !== confirm) {
+            this.exportPasswordError = 'Passwords do not match.';
+            return;
+        }
+
+        this.isExporting = true;
+        this.exportPasswordError = null;
+        try {
+            await this.exportToExcel(name, pw);
+            this.showExportPasswordModal = false;
+        } catch (error) {
+            console.error('Excel Export failed:', error);
+        } finally {
+            this.isExporting = false;
+        }
+    }
+
+    async exportToExcel(fileName: string, password: string) {
         try {
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Constituents Report');
-            worksheet.columns = [
-                { header: 'LAST NAME', key: 'lastName', width: 20 },
-                { header: 'FIRST NAME', key: 'firstName', width: 20 },
-                { header: 'GENDER', key: 'gender', width: 10 },
-                { header: 'STATUS', key: 'status', width: 15 },
-                { header: 'BIRTH DATE', key: 'birth_date', width: 15 },
-                { header: 'BARANGAY', key: 'barangay', width: 20 }
-            ];
-            this.filteredConstituentsList.forEach(item => worksheet.addRow(item));
+
+            this.buildStatisticsMatrixSheet(workbook);
+            this.buildConstituentsSheet(workbook);
+
+            workbook.eachSheet((worksheet: any) => {
+                const isConstituentsSheet = worksheet.name === 'Constituents Report';
+                worksheet.protect(password, {
+                    selectLockedCells: false,
+                    selectUnlockedCells: false,
+                    formatCells: true,
+                    formatColumns: true,
+                    formatRows: true,
+                    insertRows: false,
+                    deleteRows: false,
+                    autoFilter: isConstituentsSheet,
+                    sort: isConstituentsSheet
+                });
+            });
+
             const buffer = await workbook.xlsx.writeBuffer();
             const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-            saveAs(blob, 'Babatngon_Constituents_Report.xlsx');
+            saveAs(blob, `${fileName}.xlsx`);
         } catch (error) {
             console.error('Excel Export failed:', error);
         }
+    }
+
+    private buildStatisticsMatrixSheet(workbook: any) {
+        const worksheet = workbook.addWorksheet('Statistics Matrix Overview');
+
+        type ColDef = { header: string; key: keyof MatrixRow; color?: string };
+        type GroupDef = { title: string; cols: ColDef[] };
+
+        const statusCols: ColDef[] = [];
+        if (this.selectedStatuses.includes('Active')) statusCols.push({ header: 'ACTIVE', key: 'active_count', color: 'FF16A34A' });
+        if (this.selectedStatuses.includes('Transferred')) statusCols.push({ header: 'TRANSFERRED', key: 'transferred_count', color: 'FFF97316' });
+        if (this.selectedStatuses.includes('Deceased')) statusCols.push({ header: 'DECEASED', key: 'deceased_count', color: 'FFDC2626' });
+
+        const biometricCols: ColDef[] = [];
+        if (this.selectedGenders.includes('Male')) biometricCols.push({ header: 'MALE', key: 'male_count', color: 'FF2563EB' });
+        if (this.selectedGenders.includes('Female')) biometricCols.push({ header: 'FEMALE', key: 'female_count', color: 'FFDB2777' });
+
+        const ageCols: ColDef[] = [];
+        if (this.selectedAgeBrackets.includes('Below 18 yrs.old')) ageCols.push({ header: 'BELOW 18YRS.OLD', key: 'below_18_count' });
+        if (this.selectedAgeBrackets.includes('18 yrs.old and Above')) ageCols.push({ header: '18YRS.OLD AND ABOVE', key: 'above_18_count' });
+
+        const groups: GroupDef[] = [
+            { title: 'STATUS', cols: statusCols },
+            { title: 'GENDER', cols: biometricCols },
+            { title: 'AGE BRACKET', cols: ageCols }
+        ].filter(g => g.cols.length > 0);
+
+        const dataCols: ColDef[] = groups.flatMap(g => g.cols);
+        const totalCols = 1 + dataCols.length;
+
+        worksheet.mergeCells(1, 1, 2, 1);
+        worksheet.getCell(1, 1).value = 'BARANGAY';
+
+        let colIndex = 2;
+        groups.forEach(g => {
+            const startCol = colIndex;
+            const endCol = colIndex + g.cols.length - 1;
+            if (endCol > startCol) {
+                worksheet.mergeCells(1, startCol, 1, endCol);
+            }
+            worksheet.getCell(1, startCol).value = g.title;
+
+            g.cols.forEach((c, i) => {
+                const cell = worksheet.getCell(2, startCol + i);
+                cell.value = c.header;
+                if (c.color) cell.font = { bold: true, color: { argb: c.color } };
+            });
+
+            colIndex = endCol + 1;
+        });
+
+        [1, 2].forEach(r => {
+            worksheet.getRow(r).eachCell({ includeEmpty: true }, (cell: any) => {
+                cell.alignment = centerMiddle;
+                cell.fill = groupFill;
+                cell.border = allBorders;
+                cell.font = { ...(cell.font || {}), bold: true, size: 11 };
+            });
+        });
+
+        this.filteredMatrixReport.forEach(row => {
+            const rowValues = [row.barangay, ...dataCols.map(c => row[c.key])];
+            const dataRow = worksheet.addRow(rowValues);
+            dataRow.eachCell({ includeEmpty: true }, (cell: any) => {
+                cell.border = allBorders;
+                cell.alignment = { horizontal: cell.col === 1 ? 'left' : 'center' } as any;
+            });
+        });
+
+        const totalsMap: Record<string, number> = {
+            active_count: this.matrixTotals.active,
+            transferred_count: this.matrixTotals.transferred,
+            deceased_count: this.matrixTotals.deceased,
+            male_count: this.matrixTotals.male,
+            female_count: this.matrixTotals.female,
+            below_18_count: this.matrixTotals.below_18,
+            above_18_count: this.matrixTotals.above_18
+        };
+        const totalsValues = ['TOTAL', ...dataCols.map(c => totalsMap[c.key])];
+        const totalsRow = worksheet.addRow(totalsValues);
+        totalsRow.eachCell({ includeEmpty: true }, (cell: any) => {
+            cell.font = { bold: true };
+            cell.border = allBorders;
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF9FAFB' } } as any;
+            cell.alignment = { horizontal: cell.col === 1 ? 'left' : 'center' } as any;
+        });
+
+        const groupMinWidths: number[] = new Array(totalCols + 1).fill(0);
+        let cursor = 2;
+        groups.forEach(g => {
+            const start = cursor;
+            const end = cursor + g.cols.length - 1;
+            const share = Math.ceil((g.title.length + 2) / g.cols.length);
+            for (let c = start; c <= end; c++) groupMinWidths[c] = share;
+            cursor = end + 1;
+        });
+
+        for (let c = 1; c <= totalCols; c++) {
+            const column = worksheet.getColumn(c);
+            let maxLength = groupMinWidths[c] || 8;
+            column.eachCell({ includeEmpty: true }, (cell: any) => {
+                const text = cell.value !== null && cell.value !== undefined ? cell.value.toString() : '';
+                maxLength = Math.max(maxLength, text.length);
+            });
+            column.width = maxLength + 4;
+        }
+
+        return worksheet;
+    }
+
+    private buildConstituentsSheet(workbook: any) {
+        const worksheet = workbook.addWorksheet('Constituents Report');
+
+        type ColDef = { header: string; getValue: (item: ConstituentGranularItem) => string };
+
+        const cols: ColDef[] = [
+            { header: 'BARANGAY', getValue: item => item.barangay },
+            { header: 'FULL NAME', getValue: item => this.formatFullName(item) }
+        ];
+
+        if (this.selectedStatuses.length > 0) {
+            cols.push({ header: 'STATUS', getValue: item => this.formatStatus(item.status) });
+        }
+        if (this.selectedGenders.length > 0) {
+            cols.push({ header: 'GENDER', getValue: item => this.capitalize(item.gender) });
+        }
+        if (this.selectedAgeBrackets.length > 0) {
+            cols.push({ header: 'AGE GROUP', getValue: item => this.formatAgeGroup(item.birth_date) });
+        }
+
+        const headers = cols.map(c => c.header);
+        worksheet.addRow(headers);
+
+        worksheet.getRow(1).eachCell({ includeEmpty: true }, (cell: any) => {
+            cell.font = { bold: true, size: 11 };
+            cell.fill = groupFill;
+            cell.border = allBorders;
+            cell.alignment = centerMiddle;
+        });
+
+        worksheet.autoFilter = {
+            from: { row: 1, column: 1 },
+            to: { row: 1, column: headers.length }
+        };
+
+        this.filteredConstituentsList.forEach(item => {
+            const rowValues = cols.map(c => c.getValue(item));
+            const row = worksheet.addRow(rowValues);
+            row.eachCell({ includeEmpty: true }, (cell: any) => {
+                cell.border = allBorders;
+                cell.alignment = { horizontal: cell.col === 2 ? 'left' : 'center' } as any;
+            });
+        });
+
+        for (let c = 1; c <= headers.length; c++) {
+            const column = worksheet.getColumn(c);
+            let maxLength = 8;
+            column.eachCell({ includeEmpty: true }, (cell: any) => {
+                const text = cell.value != null ? cell.value.toString() : '';
+                maxLength = Math.max(maxLength, text.length);
+            });
+            column.width = maxLength + 4;
+        }
+
+        return worksheet;
+    }
+
+    private formatFullName(item: ConstituentGranularItem): string {
+        const last = this.capitalize(item.lastName);
+        const first = this.capitalize(item.firstName);
+        const middle = this.capitalize(item.middleName);
+        const ext = this.capitalize(item.nameExtension);
+        return [`${last},`, first, middle, ext].filter(Boolean).join(' ');
+    }
+
+    private formatStatus(status: string): string {
+        const s = (status || '').toLowerCase();
+        if (s === 'a' || s === 'active') return 'Active';
+        if (s === 't' || s === 'transferred') return 'Transferred';
+        if (s === 'd' || s === 'deceased') return 'Deceased';
+        return status;
+    }
+
+    private formatAgeGroup(birthDate?: string): string {
+        return this.calculateAge(birthDate) >= 18 ? 'Adult (18+)' : 'Minor';
+    }
+
+    private capitalize(str?: string): string {
+        if (!str) return '';
+        const trimmed = str.trim().toLowerCase();
+        return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
     }
 }
